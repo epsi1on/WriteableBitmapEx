@@ -61,8 +61,8 @@ namespace System.Windows.Media.Imaging
         private readonly int _pixelHeight;
 
 #if WPF
-      private readonly static IDictionary<WriteableBitmap, int> UpdateCountByBmp = new System.Collections.Concurrent.ConcurrentDictionary<WriteableBitmap, int>();
-      private readonly static IDictionary<WriteableBitmap, BitmapContextBitmapProperties> BitmapPropertiesByBmp = new System.Collections.Concurrent.ConcurrentDictionary<WriteableBitmap, BitmapContextBitmapProperties>();
+      //private readonly static IDictionary<WriteableBitmap, int> UpdateCountByBmp = new System.Collections.Concurrent.ConcurrentDictionary<WriteableBitmap, int>();
+      //private readonly static IDictionary<WriteableBitmap, BitmapContextBitmapProperties> BitmapPropertiesByBmp = new System.Collections.Concurrent.ConcurrentDictionary<WriteableBitmap, BitmapContextBitmapProperties>();
 
       private readonly int _length;
       private readonly int* _backBuffer;
@@ -119,10 +119,11 @@ namespace System.Windows.Media.Imaging
          //   throw new ArgumentException("The input WriteableBitmap needs to have the Pbgra32 pixel format. Use the BitmapFactory.ConvertToPbgra32Format method to automatically convert any input BitmapSource to the right format accepted by this class.", "writeableBitmap");
          //}
 
-            BitmapContextBitmapProperties bitmapProperties;
+           // BitmapContextBitmapProperties bitmapProperties;
 
-            lock (UpdateCountByBmp)
+            //lock (UpdateCountByBmp)
             { 
+                /*
                 // Ensure the bitmap is in the dictionary of mapped Instances
                 if (!UpdateCountByBmp.ContainsKey(writeableBitmap))
                 {
@@ -150,12 +151,13 @@ namespace System.Windows.Media.Imaging
                    IncrementRefCount(writeableBitmap);
                    bitmapProperties = BitmapPropertiesByBmp[writeableBitmap];
                 }
+                */
 
-                _backBufferStride = bitmapProperties.BackBufferStride;
-                _pixelWidth = bitmapProperties.Width;
-                _pixelHeight = bitmapProperties.Height;
-                _format = bitmapProperties.Format;
-                _backBuffer = bitmapProperties.Pixels;
+                _backBufferStride = writeableBitmap.BackBufferStride;
+                _pixelWidth = writeableBitmap.PixelWidth;
+                _pixelHeight = writeableBitmap.PixelHeight;
+                _format = writeableBitmap.Format;
+                _backBuffer = (int*)writeableBitmap.BackBuffer;
 
                 double width = _backBufferStride / WriteableBitmapExtensions.SizeOfArgb;
                 _length = (int)(width * _pixelHeight);
@@ -455,6 +457,7 @@ namespace System.Windows.Media.Imaging
       /// </summary>
       public void Dispose()
       {
+            /*
          // Decrement the update count. If it hits zero
          if (DecrementRefCount(_writeableBitmap) == 0)
          {
@@ -463,18 +466,22 @@ namespace System.Windows.Media.Imaging
             BitmapPropertiesByBmp.Remove(_writeableBitmap);
 
             // Invalidate the bitmap if ReadWrite _mode
-            if (_mode == ReadWriteMode.ReadWrite)
-            {
-               _writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, _pixelWidth, _pixelHeight));
-            }
+            
 
             // Unlock the bitmap
             _writeableBitmap.Unlock();
          }
-      }
+         */
+
+            if (_mode == ReadWriteMode.ReadWrite)
+            {
+                _writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, _pixelWidth, _pixelHeight));
+            }
+        }
 #endif
 
 #if WPF || NETFX_CORE
+        /*
         private static void IncrementRefCount(WriteableBitmap target)
         {
             UpdateCountByBmp[target]++;
@@ -491,6 +498,7 @@ namespace System.Windows.Media.Imaging
             UpdateCountByBmp[target] = current;
             return current;
         }
+        */
 #endif
 
 #if WPF
